@@ -1,3 +1,40 @@
+<?php
+
+$archivo = "datos.json";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $eventos = [];
+
+    if (file_exists($archivo)) {
+        $contenido = file_get_contents($archivo);
+        $eventos = json_decode($contenido, true) ?? [];
+    }
+
+    $nuevoEvento = [
+        "id" => time(),
+        "titulo" => $_POST["titulo"] ?? "",
+        "cliente" => $_POST["cliente"] ?? "",
+        "fecha" => $_POST["fecha"] ?? "",
+        "hora" => $_POST["hora"] ?? "",
+        "categoria" => $_POST["categoria"] ?? "",
+        "ubicacion" => $_POST["ubicacion"] ?? "",
+        "descripcion" => $_POST["descripcion"] ?? ""
+    ];
+
+    $eventos[] = $nuevoEvento;
+
+    file_put_contents(
+        $archivo,
+        json_encode($eventos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+    );
+
+    header("Location: index.php?ok=1");
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -42,22 +79,25 @@
         </div>
 
         <nav class="menu">
-            <a href="#" class="menu-item active">
-                <i class="fa-solid fa-house"></i>
-                <span>Inicio</span>
-            </a>
-            <a href="#" class="menu-item">
-                <i class="fa-regular fa-calendar-days"></i>
-                <span>Mi Agenda</span>
-            </a>
-            <a href="#" class="menu-item">
-                <i class="fa-regular fa-note-sticky"></i>
-                <span>Notas</span>
-            </a>
-            <a href="#" class="menu-item">
-                <i class="fa-solid fa-gear"></i>
-                <span>Configuración</span>
-            </a>
+            <a href="index.php" class="menu-item">
+    <i class="fa-solid fa-house"></i>
+    <span>Inicio</span>
+</a>
+
+<a href="agenda.php" class="menu-item">
+    <i class="fa-solid fa-calendar-days"></i>
+    <span>Mi Agenda</span>
+</a>
+
+<a href="notas.php" class="menu-item">
+    <i class="fa-regular fa-note-sticky"></i>
+    <span>Notas</span>
+</a>
+
+<a href="#" class="menu-item">
+    <i class="fa-solid fa-gear"></i>
+    <span>Configuración</span>
+</a>
         </nav>
 
         <div class="sidebar-frase">
@@ -128,7 +168,7 @@
                 </div>
 
                 <!-- FORMULARIO -->
-                <form class="formulario">
+                <form class="formulario" method="POST" action="registrar.php">
 
                     <!-- TÍTULO -->
                     <div class="campo campo-full">
@@ -141,6 +181,7 @@
                         <input
                             type="text"
                             id="titulo"
+                            name="titulo"
                             placeholder="Ej. Reunión con cliente"
                             required>
                     </div>
@@ -154,6 +195,7 @@
                         <input
                             type="text"
                             id="cliente"
+                            name="cliente"
                             placeholder="Nombre del cliente">
                     </div>
 
@@ -168,6 +210,7 @@
                             <input
                                 type="date"
                                 id="fecha"
+                                name="fecha"
                                 required>
                         </div>
 
@@ -180,6 +223,7 @@
                             <input
                                 type="time"
                                 id="hora"
+                                name="hora"
                                 required>
                         </div>
                     </div>
@@ -192,7 +236,7 @@
                                 Categoría
                             </label>
 
-                            <select id="categoria">
+                            <select id="categoria" name="categoria">
                                 <option>
                                     Selecciona una categoría
                                 </option>
@@ -219,6 +263,7 @@
                             <input
                                 type="text"
                                 id="ubicacion"
+                                name="ubicacion"
                                 placeholder="¿Dónde será?">
                         </div>
                     </div>
@@ -231,6 +276,7 @@
                         </label>
                         <textarea
                             id="descripcion"
+                            name="descripcion"
                             placeholder="Agrega detalles de tu evento..."></textarea>
                     </div>
 
