@@ -1,37 +1,18 @@
 <?php
 
-$archivo = "datos.json";
-
-$eventos = [];
-
-if (file_exists($archivo)) {
-
-    $contenido = file_get_contents($archivo);
-
-    $eventos = json_decode($contenido, true) ?? [];
-
-}
+require_once "conexion.php";
 
 
-$id = $_GET["id"] ?? "";
+/* =========================
+   OBTENER ID
+   ========================= */
 
-$eventoEncontrado = null;
-
-
-foreach ($eventos as $evento) {
-
-    if ((string)$evento["id"] === (string)$id) {
-
-        $eventoEncontrado = $evento;
-
-        break;
-
-    }
-
-}
+$id = isset($_GET["id"])
+    ? (int) $_GET["id"]
+    : 0;
 
 
-if (!$eventoEncontrado) {
+if ($id <= 0) {
 
     header("Location: agenda.php");
 
@@ -40,56 +21,161 @@ if (!$eventoEncontrado) {
 }
 
 
-/* ================= ACTUALIZAR ================= */
+/* =========================
+   ACTUALIZAR EVENTO
+   ========================= */
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    foreach ($eventos as &$evento) {
 
-        if ((string)$evento["id"] === (string)$id) {
+    $titulo = trim($_POST["titulo"] ?? "");
 
-            $evento["titulo"] =
-                $_POST["titulo"] ?? "";
+    $cliente = trim($_POST["cliente"] ?? "");
 
-            $evento["cliente"] =
-                $_POST["cliente"] ?? "";
+    $fecha = $_POST["fecha"] ?? "";
 
-            $evento["fecha"] =
-                $_POST["fecha"] ?? "";
+    $hora = $_POST["hora"] ?? "";
 
-            $evento["hora"] =
-                $_POST["hora"] ?? "";
+    $categoria = $_POST["categoria"] ?? "";
 
-            $evento["categoria"] =
-                $_POST["categoria"] ?? "";
+    $ubicacion = trim($_POST["ubicacion"] ?? "");
 
-            $evento["ubicacion"] =
-                $_POST["ubicacion"] ?? "";
+    $descripcion = trim($_POST["descripcion"] ?? "");
 
-            $evento["descripcion"] =
-                $_POST["descripcion"] ?? "";
 
-            break;
 
-        }
+    /* VALIDACIONES */
+
+    if ($titulo === "") {
+
+        die("El título es obligatorio.");
 
     }
 
-    unset($evento);
+
+    if ($cliente === "") {
+
+        die("El nombre del cliente es obligatorio.");
+
+    }
 
 
-    file_put_contents(
-        $archivo,
-        json_encode(
-            $eventos,
-            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-        )
-    );
+    if ($fecha === "") {
+
+        die("La fecha es obligatoria.");
+
+    }
+
+
+    if ($hora === "") {
+
+        die("La hora es obligatoria.");
+
+    }
+
+
+    if ($categoria === "") {
+
+        die("La categoría es obligatoria.");
+
+    }
+
+
+
+    /* CATEGORÍAS PERMITIDAS */
+
+    $categoriasPermitidas = [
+        "Evento",
+        "Trabajo",
+        "Cita",
+        "Personal"
+    ];
+
+
+    if (!in_array($categoria, $categoriasPermitidas, true)) {
+
+        die("La categoría seleccionada no es válida.");
+
+    }
+
+
+
+    /* ACTUALIZAR */
+
+    $sql = "UPDATE eventos
+            SET titulo = :titulo,
+                cliente = :cliente,
+                fecha = :fecha,
+                hora = :hora,
+                categoria = :categoria,
+                ubicacion = :ubicacion,
+                descripcion = :descripcion
+            WHERE id = :id";
+
+
+    $stmt = $pdo->prepare($sql);
+
+
+    $stmt->execute([
+
+        ":titulo" => $titulo,
+
+        ":cliente" => $cliente,
+
+        ":fecha" => $fecha,
+
+        ":hora" => $hora,
+
+        ":categoria" => $categoria,
+
+        ":ubicacion" => $ubicacion,
+
+        ":descripcion" => $descripcion,
+
+        ":id" => $id
+
+    ]);
 
 
     header("Location: agenda.php");
 
     exit;
+
+}
+
+
+
+/* =========================
+   BUSCAR EVENTO
+   ========================= */
+
+$sql = "SELECT
+            id,
+            titulo,
+            cliente,
+            fecha,
+            hora,
+            categoria,
+            ubicacion,
+            descripcion
+        FROM eventos
+        WHERE id = :id";
+
+
+$stmt = $pdo->prepare($sql);
+
+
+$stmt->execute([
+    ":id" => $id
+]);
+
+
+$evento = $stmt->fetch();
+
+
+if (!$evento) {
+
+    die("El evento no existe.");
 
 }
 
@@ -107,7 +193,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>AgendaWeb - Editar evento</title>
+    <title>Editar evento - AgendaWeb</title>
+
+
+    <!-- GOOGLE FONTS -->
 
     <link
         rel="preconnect"
@@ -121,451 +210,1040 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     >
 
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap"
         rel="stylesheet"
     >
+
+
+    <!-- FONT AWESOME -->
 
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
+
+    <!-- CSS -->
+
     <link
         rel="stylesheet"
         href="css/styles.css"
     >
 
+
+
+    <style>
+
+        /* =====================================================
+           EDITAR EVENTO
+           ===================================================== */
+
+
+        .editar-pagina {
+
+            min-height: calc(100vh - 80px);
+
+            padding: 45px 60px 60px;
+
+            background: #FFF9FA;
+
+        }
+
+
+
+        .editar-contenido {
+
+            max-width: 900px;
+
+            margin: 0 auto;
+
+        }
+
+
+
+        /* =========================
+           ENCABEZADO
+           ========================= */
+
+        .editar-encabezado {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 25px;
+
+            margin-bottom: 35px;
+
+        }
+
+
+
+        .editar-titulo {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 18px;
+
+        }
+
+
+
+        .editar-icono {
+
+            width: 52px;
+
+            height: 52px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #F8E8EC;
+
+            color: #7A2636;
+
+            border-radius: 14px;
+
+            font-size: 20px;
+
+        }
+
+
+
+        .editar-titulo-texto p {
+
+            margin: 0 0 5px;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 1.4px;
+
+            text-transform: uppercase;
+
+            color: #9B3F52;
+
+        }
+
+
+
+        .editar-titulo-texto h2 {
+
+            margin: 0;
+
+            font-family: "Playfair Display", serif;
+
+            font-size: 34px;
+
+            font-weight: 700;
+
+            color: #5A1824;
+
+        }
+
+
+
+        .editar-regresar {
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            height: 38px;
+
+            padding: 0 16px;
+
+            border: 1px solid #E2CDD2;
+
+            border-radius: 9px;
+
+            background: transparent;
+
+            color: #7A2636;
+
+            text-decoration: none;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            transition: .2s ease;
+
+        }
+
+
+
+        .editar-regresar:hover {
+
+            background: #F8E8EC;
+
+            border-color: #E8B7C0;
+
+        }
+
+
+
+        /* =========================
+           FORMULARIO
+           ========================= */
+
+        .editar-formulario {
+
+            width: 100%;
+
+        }
+
+
+
+        .editar-campos {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 22px 25px;
+
+        }
+
+
+
+        .editar-campo {
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+
+
+        .editar-campo-completo {
+
+            grid-column: 1 / -1;
+
+        }
+
+
+
+        .editar-campo label {
+
+            margin-bottom: 8px;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            color: #3F3034;
+
+        }
+
+
+
+        .editar-campo label i {
+
+            margin-right: 7px;
+
+            color: #9B3F52;
+
+        }
+
+
+
+        .editar-campo input,
+
+        .editar-campo textarea,
+
+        .editar-campo select {
+
+            width: 100%;
+
+            box-sizing: border-box;
+
+            border: 1px solid #E2CDD2;
+
+            border-radius: 10px;
+
+            background: #FFFFFF;
+
+            color: #3F3034;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 14px;
+
+            outline: none;
+
+            transition: .2s ease;
+
+        }
+
+
+
+        .editar-campo input,
+
+        .editar-campo select {
+
+            height: 45px;
+
+            padding: 0 14px;
+
+        }
+
+
+
+        .editar-campo textarea {
+
+            min-height: 130px;
+
+            padding: 13px 14px;
+
+            resize: vertical;
+
+            line-height: 1.5;
+
+        }
+
+
+
+        .editar-campo input:focus,
+
+        .editar-campo textarea:focus,
+
+        .editar-campo select:focus {
+
+            border-color: #9B3F52;
+
+            box-shadow: 0 0 0 3px rgba(232, 183, 192, .25);
+
+        }
+
+
+
+        .editar-campo input:hover,
+
+        .editar-campo textarea:hover,
+
+        .editar-campo select:hover {
+
+            border-color: #D2BFC4;
+
+        }
+
+
+
+        /* =========================
+           INFORMACIÓN
+           ========================= */
+
+        .editar-info {
+
+            margin-top: 28px;
+
+            padding: 14px 16px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            border-left: 3px solid #E8B7C0;
+
+            background: #F8E8EC;
+
+            color: #76666B;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 12px;
+
+            line-height: 1.5;
+
+        }
+
+
+
+        .editar-info i {
+
+            color: #7A2636;
+
+            font-size: 15px;
+
+        }
+
+
+
+        /* =========================
+           BOTONES
+           ========================= */
+
+        .editar-acciones {
+
+            display: flex;
+
+            justify-content: flex-end;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-top: 30px;
+
+        }
+
+
+
+        .editar-btn-cancelar,
+
+        .editar-btn-guardar {
+
+            height: 38px;
+
+            display: inline-flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 7px;
+
+            padding: 0 17px;
+
+            border-radius: 9px;
+
+            font-family: "Inter", sans-serif;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            text-decoration: none;
+
+            cursor: pointer;
+
+            transition: .2s ease;
+
+        }
+
+
+
+        .editar-btn-cancelar {
+
+            border: 1px solid #E2CDD2;
+
+            background: #F8E8EC;
+
+            color: #7A2636;
+
+        }
+
+
+
+        .editar-btn-cancelar:hover {
+
+            background: #F1DCE1;
+
+        }
+
+
+
+        .editar-btn-guardar {
+
+            border: 1px solid #7A2636;
+
+            background: #7A2636;
+
+            color: #FFFFFF;
+
+        }
+
+
+
+        .editar-btn-guardar:hover {
+
+            background: #5A1824;
+
+            border-color: #5A1824;
+
+        }
+
+
+
+        /* =========================
+           RESPONSIVE
+           ========================= */
+
+        @media (max-width: 750px) {
+
+            .editar-pagina {
+
+                padding: 30px 25px 45px;
+
+            }
+
+
+
+            .editar-encabezado {
+
+                align-items: flex-start;
+
+                flex-direction: column;
+
+            }
+
+
+
+            .editar-campos {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+
+            .editar-campo-completo {
+
+                grid-column: auto;
+
+            }
+
+
+
+            .editar-titulo-texto h2 {
+
+                font-size: 29px;
+
+            }
+
+
+
+            .editar-regresar {
+
+                width: fit-content;
+
+            }
+
+        }
+
+
+
+        @media (max-width: 500px) {
+
+            .editar-pagina {
+
+                padding: 25px 18px 40px;
+
+            }
+
+
+
+            .editar-titulo {
+
+                gap: 12px;
+
+            }
+
+
+
+            .editar-icono {
+
+                width: 45px;
+
+                height: 45px;
+
+            }
+
+
+
+            .editar-titulo-texto h2 {
+
+                font-size: 26px;
+
+            }
+
+
+
+            .editar-acciones {
+
+                justify-content: stretch;
+
+            }
+
+
+
+            .editar-btn-cancelar,
+
+            .editar-btn-guardar {
+
+                flex: 1;
+
+            }
+
+        }
+
+    </style>
+
 </head>
+
+
 
 <body>
 
+
+    <!-- EFECTOS DE FONDO -->
+
     <div class="glow glow-1"></div>
+
     <div class="glow glow-2"></div>
 
 
-    <!-- SIDEBAR -->
 
-    <aside class="sidebar">
+    <!-- =========================
+         CONTENIDO
+         ========================= -->
 
-        <div class="brand">
+    <main class="editar-pagina">
 
-            <div class="brand-icon">
 
-                <i class="fa-solid fa-calendar-days"></i>
+        <div class="editar-contenido">
 
-            </div>
 
-            <div>
+            <!-- ENCABEZADO -->
 
-                <h2>
-                    Agenda<span>Web</span>
-                </h2>
+            <header class="editar-encabezado">
 
-                <p>
-                    Organiza tus momentos
-                </p>
 
-            </div>
+                <div class="editar-titulo">
 
-        </div>
 
-
-        <nav class="menu">
-
-            <a
-                href="index.php"
-                class="menu-item"
-            >
-
-                <i class="fa-solid fa-house"></i>
-
-                <span>
-                    Inicio
-                </span>
-
-            </a>
-
-
-            <a
-                href="agenda.php"
-                class="menu-item active"
-            >
-
-                <i class="fa-solid fa-calendar-days"></i>
-
-                <span>
-                    Mi Agenda
-                </span>
-
-            </a>
-
-
-            <a
-                href="#"
-                class="menu-item"
-            >
-
-                <i class="fa-regular fa-note-sticky"></i>
-
-                <span>
-                    Notas
-                </span>
-
-            </a>
-
-
-            <a
-                href="#"
-                class="menu-item"
-            >
-
-                <i class="fa-solid fa-gear"></i>
-
-                <span>
-                    Configuración
-                </span>
-
-            </a>
-
-        </nav>
-
-
-        <div class="sidebar-frase">
-
-            <i class="fa-solid fa-quote-left"></i>
-
-            <p>
-                "Organiza tu tiempo y disfruta cada momento."
-            </p>
-
-            <i class="fa-solid fa-quote-right"></i>
-
-        </div>
-
-
-        <div class="sidebar-footer">
-
-            <i class="fa-solid fa-heart"></i>
-
-            <span>
-                AgendaWeb
-            </span>
-
-        </div>
-
-    </aside>
-
-
-    <!-- MAIN -->
-
-    <main class="main">
-
-
-        <header class="topbar">
-
-            <div class="buscador">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    placeholder="Buscar eventos, notas..."
-                >
-
-            </div>
-
-
-            <div class="usuario">
-
-                <button class="notificacion">
-
-                    <i class="fa-regular fa-bell"></i>
-
-                    <span></span>
-
-                </button>
-
-
-                <div class="avatar">
-
-                    <i class="fa-solid fa-user"></i>
-
-                </div>
-
-
-                <span>
-                    Mi Agenda
-                </span>
-
-            </div>
-
-        </header>
-
-
-        <!-- CONTENIDO -->
-
-        <div class="inicio-contenido">
-
-
-            <section class="inicio-presentacion">
-
-                <div>
-
-                    <p class="etiqueta">
+                    <div class="editar-icono">
 
                         <i class="fa-solid fa-pen"></i>
 
-                        MI AGENDA
-
-                    </p>
+                    </div>
 
 
-                    <h2>
-                        Editar evento
-                    </h2>
+                    <div class="editar-titulo-texto">
 
-
-                    <p class="texto-inicio">
-
-                        Modifica la información de tu evento.
-
-                    </p>
-
-                </div>
-
-
-                <div class="decoracion-calendario">
-
-                    <i class="fa-solid fa-pen-to-square"></i>
-
-                </div>
-
-            </section>
-
-
-            <!-- FORMULARIO -->
-
-            <section class="formulario-card">
-
-                <div class="formulario-titulo">
-
-                    <div>
-
-                        <h3>
-                            Información del evento
-                        </h3>
 
                         <p>
-                            Actualiza los datos que necesites.
+
+                            <i class="fa-solid fa-calendar-check"></i>
+
+                            MODIFICAR EVENTO
+
                         </p>
+
+
+                        <h2>
+                            Editar evento
+                        </h2>
+
 
                     </div>
 
-                    <i class="fa-solid fa-calendar-pen"></i>
 
                 </div>
 
 
-                <form
-                    class="formulario-agenda"
-                    method="POST"
+
+                <a
+                    href="agenda.php"
+                    class="editar-regresar"
                 >
 
+                    <i class="fa-solid fa-arrow-left"></i>
 
-                    <div class="campo">
+                    Mi agenda
+
+                </a>
+
+
+            </header>
+
+
+
+            <!-- =========================
+                 FORMULARIO
+                 ========================= -->
+
+            <form
+                action="editar.php?id=<?= $evento["id"] ?>"
+                method="POST"
+                class="editar-formulario"
+            >
+
+
+                <div class="editar-campos">
+
+
+                    <!-- TÍTULO -->
+
+                    <div class="editar-campo editar-campo-completo">
+
 
                         <label for="titulo">
+
                             <i class="fa-solid fa-heading"></i>
+
                             Título del evento
+
                         </label>
+
 
                         <input
                             type="text"
                             id="titulo"
                             name="titulo"
-                            value="<?= htmlspecialchars($eventoEncontrado["titulo"]) ?>"
+                            maxlength="150"
+                            value="<?= htmlspecialchars(
+                                $evento["titulo"],
+                                ENT_QUOTES,
+                                "UTF-8"
+                            ) ?>"
+                            placeholder="Escribe el título del evento"
                             required
                         >
+
 
                     </div>
 
 
-                    <div class="campo">
+
+                    <!-- CLIENTE -->
+
+                    <div class="editar-campo">
+
 
                         <label for="cliente">
+
                             <i class="fa-solid fa-user"></i>
-                            Cliente
+
+                            Nombre del cliente
+
                         </label>
+
 
                         <input
                             type="text"
                             id="cliente"
                             name="cliente"
-                            value="<?= htmlspecialchars($eventoEncontrado["cliente"]) ?>"
+                            maxlength="150"
+                            value="<?= htmlspecialchars(
+                                $evento["cliente"] ?? "",
+                                ENT_QUOTES,
+                                "UTF-8"
+                            ) ?>"
+                            placeholder="Ej. María González"
+                            required
                         >
+
 
                     </div>
 
 
-                    <div class="campo">
+
+                    <!-- ID -->
+
+                    <div class="editar-campo">
+
+
+                        <label>
+
+                            <i class="fa-solid fa-hashtag"></i>
+
+                            Evento
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            value="#<?= $evento["id"] ?>"
+                            readonly
+                        >
+
+
+                    </div>
+
+
+
+                    <!-- FECHA -->
+
+                    <div class="editar-campo">
+
 
                         <label for="fecha">
+
                             <i class="fa-regular fa-calendar"></i>
+
                             Fecha
+
                         </label>
+
 
                         <input
                             type="date"
                             id="fecha"
                             name="fecha"
-                            value="<?= htmlspecialchars($eventoEncontrado["fecha"]) ?>"
+                            value="<?= htmlspecialchars(
+                                $evento["fecha"] ?? "",
+                                ENT_QUOTES,
+                                "UTF-8"
+                            ) ?>"
                             required
                         >
+
 
                     </div>
 
 
-                    <div class="campo">
+
+                    <!-- HORA -->
+
+                    <div class="editar-campo">
+
 
                         <label for="hora">
+
                             <i class="fa-regular fa-clock"></i>
+
                             Hora
+
                         </label>
+
 
                         <input
                             type="time"
                             id="hora"
                             name="hora"
-                            value="<?= htmlspecialchars($eventoEncontrado["hora"]) ?>"
+                            value="<?= htmlspecialchars(
+                                $evento["hora"] ?? "",
+                                ENT_QUOTES,
+                                "UTF-8"
+                            ) ?>"
                             required
                         >
+
 
                     </div>
 
 
-                    <div class="campo">
+
+                    <!-- CATEGORÍA -->
+
+                    <div class="editar-campo">
+
 
                         <label for="categoria">
+
                             <i class="fa-solid fa-tag"></i>
+
                             Categoría
+
                         </label>
+
 
                         <select
                             id="categoria"
                             name="categoria"
+                            required
                         >
+
 
                             <option value="">
                                 Selecciona una categoría
                             </option>
 
-                            <?php
 
-                            $categorias = [
-                                "Reunión",
-                                "Cita",
-                                "Trabajo",
-                                "Personal",
-                                "Evento"
-                            ];
+                            <option
+                                value="Evento"
+                                <?= ($evento["categoria"] ?? "") === "Evento" ? "selected" : "" ?>
+                            >
+                                Evento
+                            </option>
 
-                            foreach ($categorias as $categoria):
 
-                            ?>
+                            <option
+                                value="Trabajo"
+                                <?= ($evento["categoria"] ?? "") === "Trabajo" ? "selected" : "" ?>
+                            >
+                                Trabajo
+                            </option>
 
-                                <option
-                                    value="<?= htmlspecialchars($categoria) ?>"
-                                    <?= $eventoEncontrado["categoria"] === $categoria ? "selected" : "" ?>
-                                >
 
-                                    <?= htmlspecialchars($categoria) ?>
+                            <option
+                                value="Cita"
+                                <?= ($evento["categoria"] ?? "") === "Cita" ? "selected" : "" ?>
+                            >
+                                Cita
+                            </option>
 
-                                </option>
 
-                            <?php endforeach; ?>
+                            <option
+                                value="Personal"
+                                <?= ($evento["categoria"] ?? "") === "Personal" ? "selected" : "" ?>
+                            >
+                                Personal
+                            </option>
+
 
                         </select>
+
 
                     </div>
 
 
-                    <div class="campo">
+
+                    <!-- UBICACIÓN -->
+
+                    <div class="editar-campo">
+
 
                         <label for="ubicacion">
+
                             <i class="fa-solid fa-location-dot"></i>
+
                             Ubicación
+
                         </label>
+
 
                         <input
                             type="text"
                             id="ubicacion"
                             name="ubicacion"
-                            value="<?= htmlspecialchars($eventoEncontrado["ubicacion"]) ?>"
+                            maxlength="200"
+                            value="<?= htmlspecialchars(
+                                $evento["ubicacion"] ?? "",
+                                ENT_QUOTES,
+                                "UTF-8"
+                            ) ?>"
+                            placeholder="Ej. Guadalajara, Jalisco"
                         >
+
 
                     </div>
 
 
-                    <div class="campo campo-completo">
+
+                    <!-- DESCRIPCIÓN -->
+
+                    <div class="editar-campo editar-campo-completo">
+
 
                         <label for="descripcion">
+
                             <i class="fa-solid fa-align-left"></i>
+
                             Descripción
+
                         </label>
+
 
                         <textarea
                             id="descripcion"
                             name="descripcion"
-                        ><?= htmlspecialchars($eventoEncontrado["descripcion"]) ?></textarea>
+                            rows="6"
+                            placeholder="Agrega una descripción para este evento..."
+                        ><?= htmlspecialchars(
+                            $evento["descripcion"] ?? "",
+                            ENT_QUOTES,
+                            "UTF-8"
+                        ) ?></textarea>
+
 
                     </div>
 
 
-                    <div class="formulario-botones">
-
-                        <a
-                            href="agenda.php"
-                            class="btn-limpiar"
-                        >
-
-                            <i class="fa-solid fa-arrow-left"></i>
-
-                            Cancelar
-
-                        </a>
+                </div>
 
 
-                        <button
-                            type="submit"
-                            class="btn-guardar"
-                        >
 
-                            <i class="fa-solid fa-floppy-disk"></i>
+                <!-- =========================
+                     INFORMACIÓN
+                     ========================= -->
 
-                            Guardar cambios
-
-                        </button>
-
-                    </div>
+                <div class="editar-info">
 
 
-                </form>
+                    <i class="fa-solid fa-circle-info"></i>
 
-            </section>
+
+                    <span>
+
+                        Modifica los datos que necesites y después selecciona
+                        <strong>Guardar cambios</strong>
+                        para actualizar el evento.
+
+                    </span>
+
+
+                </div>
+
+
+
+                <!-- =========================
+                     BOTONES
+                     ========================= -->
+
+                <div class="editar-acciones">
+
+
+                    <a
+                        href="agenda.php"
+                        class="editar-btn-cancelar"
+                    >
+
+                        <i class="fa-solid fa-xmark"></i>
+
+                        Cancelar
+
+                    </a>
+
+
+
+                    <button
+                        type="submit"
+                        class="editar-btn-guardar"
+                    >
+
+                        <i class="fa-solid fa-check"></i>
+
+                        Guardar cambios
+
+                    </button>
+
+
+                </div>
+
+
+            </form>
+
 
         </div>
 
 
-        <footer>
-
-            <i class="fa-solid fa-heart"></i>
-
-            AgendaWeb · Organiza tu tiempo
-
-        </footer>
-
-
     </main>
+
 
 </body>
 

@@ -1,16 +1,28 @@
 <?php
 
-$archivo = "datos.json";
+require_once "conexion.php";
 
-$eventos = [];
 
-if (file_exists($archivo)) {
+/* =========================
+   OBTENER EVENTOS
+   ========================= */
 
-    $contenido = file_get_contents($archivo);
+$sql = "SELECT
+            id,
+            titulo,
+            cliente,
+            fecha,
+            hora,
+            categoria,
+            ubicacion,
+            descripcion
+        FROM eventos
+        ORDER BY fecha ASC, hora ASC, id DESC";
 
-    $eventos = json_decode($contenido, true) ?? [];
 
-}
+$stmt = $pdo->query($sql);
+
+$eventos = $stmt->fetchAll();
 
 ?>
 
@@ -21,47 +33,55 @@ if (file_exists($archivo)) {
 
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>AgendaWeb - Mi Agenda</title>
+    <title>Mi Agenda - AgendaWeb</title>
+
+
+    <!-- GOOGLE FONTS -->
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
 
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin
-    >
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
         rel="stylesheet"
     >
 
+
+    <!-- FONT AWESOME -->
+
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <link
-        rel="stylesheet"
-        href="css/styles.css"
-    >
+
+    <!-- CSS -->
+
+    <link rel="stylesheet" href="css/styles.css">
 
 </head>
 
+
 <body>
 
+
+    <!-- DECORACIÓN -->
+
     <div class="glow glow-1"></div>
+
     <div class="glow glow-2"></div>
+
 
 
     <!-- ================= SIDEBAR ================= -->
 
     <aside class="sidebar">
+
+
+        <!-- LOGO -->
 
         <div class="brand">
 
@@ -70,6 +90,7 @@ if (file_exists($archivo)) {
                 <i class="fa-solid fa-calendar-days"></i>
 
             </div>
+
 
             <div>
 
@@ -86,10 +107,14 @@ if (file_exists($archivo)) {
         </div>
 
 
+
+        <!-- MENÚ -->
+
         <nav class="menu">
 
+
             <a
-                href="index.php"
+                href="index.html"
                 class="menu-item"
             >
 
@@ -100,6 +125,7 @@ if (file_exists($archivo)) {
                 </span>
 
             </a>
+
 
 
             <a
@@ -116,35 +142,11 @@ if (file_exists($archivo)) {
             </a>
 
 
-            <a
-                href="#"
-                class="menu-item"
-            >
-
-                <i class="fa-regular fa-note-sticky"></i>
-
-                <span>
-                    Notas
-                </span>
-
-            </a>
-
-
-            <a
-                href="#"
-                class="menu-item"
-            >
-
-                <i class="fa-solid fa-gear"></i>
-
-                <span>
-                    Configuración
-                </span>
-
-            </a>
-
         </nav>
 
+
+
+        <!-- FRASE -->
 
         <div class="sidebar-frase">
 
@@ -159,6 +161,9 @@ if (file_exists($archivo)) {
         </div>
 
 
+
+        <!-- PIE -->
+
         <div class="sidebar-footer">
 
             <i class="fa-solid fa-heart"></i>
@@ -169,10 +174,12 @@ if (file_exists($archivo)) {
 
         </div>
 
+
     </aside>
 
 
-    <!-- ================= MAIN ================= -->
+
+    <!-- ================= CONTENIDO PRINCIPAL ================= -->
 
     <main class="main">
 
@@ -181,32 +188,13 @@ if (file_exists($archivo)) {
 
         <header class="topbar">
 
-            <div class="buscador">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    placeholder="Buscar eventos, notas..."
-                >
-
-            </div>
-
 
             <div class="usuario">
-
-                <button class="notificacion">
-
-                    <i class="fa-regular fa-bell"></i>
-
-                    <span></span>
-
-                </button>
 
 
                 <div class="avatar">
 
-                    <i class="fa-solid fa-user"></i>
+                    <i class="fa-solid fa-calendar-check"></i>
 
                 </div>
 
@@ -215,252 +203,127 @@ if (file_exists($archivo)) {
                     Mi Agenda
                 </span>
 
+
             </div>
+
 
         </header>
 
 
-        <!-- ================= CONTENIDO ================= -->
 
-        <div class="inicio-contenido">
+        <!-- ================= MI AGENDA ================= -->
+
+        <div class="agenda-contenido">
+
 
 
             <!-- ENCABEZADO -->
 
-            <section class="inicio-presentacion">
+            <section class="agenda-encabezado">
 
-                <div>
+
+                <div class="agenda-titulo">
+
 
                     <p class="etiqueta">
 
-                        <i class="fa-solid fa-calendar-days"></i>
+                        <i class="fa-solid fa-calendar-check"></i>
 
-                        MI AGENDA
+                        MIS EVENTOS
 
                     </p>
 
 
                     <h2>
-                        Mis eventos
+                        Mi Agenda
                     </h2>
 
 
                     <p class="texto-inicio">
 
-                        Aquí puedes consultar todos los eventos
-                        que has registrado en tu agenda.
+                        Aquí puedes consultar, editar y eliminar tus eventos registrados.
 
                     </p>
 
-                </div>
-
-
-                <div class="contador-eventos">
-
-                    <strong>
-                        <?= count($eventos) ?>
-                    </strong>
-
-                    <span>
-                        eventos
-                    </span>
 
                 </div>
+
+
+
+                <div class="agenda-derecha">
+
+
+                    <!-- CONTADOR -->
+
+                    <div class="contador-eventos">
+
+                        <strong>
+                            <?= count($eventos) ?>
+                        </strong>
+
+                        <span>
+                            eventos
+                        </span>
+
+                    </div>
+
+
+
+                    <!-- NUEVO EVENTO -->
+
+                    <a
+                        href="index.html"
+                        class="btn-nuevo"
+                    >
+
+                        <i class="fa-solid fa-plus"></i>
+
+                        Nuevo evento
+
+                    </a>
+
+
+                </div>
+
 
             </section>
 
 
-            <!-- BOTÓN NUEVO -->
 
-            <div class="agenda-accion">
+            <!-- ================= MENSAJE ================= -->
 
-                <a
-                    href="index.php"
-                    class="btn-nuevo"
-                >
+            <?php if (isset($_GET["guardado"])): ?>
 
-                    <i class="fa-solid fa-plus"></i>
 
-                    Nuevo evento
+                <div class="mensaje-exito">
 
-                </a>
 
-            </div>
+                    <i class="fa-solid fa-circle-check"></i>
 
 
-            <?php if (count($eventos) > 0): ?>
-
-
-                <!-- LISTA DE EVENTOS -->
-
-                <div class="eventos-lista">
-
-
-                    <?php foreach ($eventos as $evento): ?>
-
-                        <article class="evento-card-agenda">
-
-
-                            <div class="evento-contenido">
-
-
-                                <?php if (!empty($evento["categoria"])): ?>
-
-                                    <span class="evento-categoria">
-
-                                        <?= htmlspecialchars($evento["categoria"]) ?>
-
-                                    </span>
-
-                                <?php endif; ?>
-
-
-                                <h3>
-
-                                    <?= htmlspecialchars($evento["titulo"]) ?>
-
-                                </h3>
-
-
-                                <?php if (!empty($evento["cliente"])): ?>
-
-                                    <p>
-
-                                        <i class="fa-solid fa-user"></i>
-
-                                        <?= htmlspecialchars($evento["cliente"]) ?>
-
-                                    </p>
-
-                                <?php endif; ?>
-
-
-                                <div class="evento-datos">
-
-
-                                    <?php if (!empty($evento["fecha"])): ?>
-
-                                        <span>
-
-                                            <i class="fa-regular fa-calendar"></i>
-
-                                            <?= htmlspecialchars($evento["fecha"]) ?>
-
-                                        </span>
-
-                                    <?php endif; ?>
-
-
-                                    <?php if (!empty($evento["hora"])): ?>
-
-                                        <span>
-
-                                            <i class="fa-regular fa-clock"></i>
-
-                                            <?= htmlspecialchars($evento["hora"]) ?>
-
-                                        </span>
-
-                                    <?php endif; ?>
-
-
-                                    <?php if (!empty($evento["ubicacion"])): ?>
-
-                                        <span>
-
-                                            <i class="fa-solid fa-location-dot"></i>
-
-                                            <?= htmlspecialchars($evento["ubicacion"]) ?>
-
-                                        </span>
-
-                                    <?php endif; ?>
-
-
-                                </div>
-
-
-                                <?php if (!empty($evento["descripcion"])): ?>
-
-                                    <p class="evento-descripcion">
-
-                                        <?= nl2br(
-                                            htmlspecialchars(
-                                                $evento["descripcion"]
-                                            )
-                                        ) ?>
-
-                                    </p>
-
-                                <?php endif; ?>
-
-
-                            </div>
-
-
-                            <!-- BOTONES -->
-
-                            <div class="evento-botones">
-
-
-                                <a
-                                    href="editar.php?id=<?= urlencode($evento["id"]) ?>"
-                                    class="btn-editar"
-                                >
-
-                                    <i class="fa-solid fa-pen"></i>
-
-                                    Editar
-
-                                </a>
-
-
-                                <form
-                                    action="borrar.php"
-                                    method="POST"
-                                    onsubmit="return confirm('¿Seguro que deseas eliminar este evento?');"
-                                >
-
-                                    <input
-                                        type="hidden"
-                                        name="id"
-                                        value="<?= htmlspecialchars($evento["id"]) ?>"
-                                    >
-
-
-                                    <button
-                                        type="submit"
-                                        class="btn-eliminar"
-                                    >
-
-                                        <i class="fa-solid fa-trash"></i>
-
-                                        Eliminar
-
-                                    </button>
-
-                                </form>
-
-
-                            </div>
-
-
-                        </article>
-
-                    <?php endforeach; ?>
+                    <span>
+                        ¡Evento guardado correctamente!
+                    </span>
 
 
                 </div>
 
 
-            <?php else: ?>
+            <?php endif; ?>
+
+
+
+            <!-- ================= EVENTOS ================= -->
+
+            <?php if (count($eventos) === 0): ?>
 
 
                 <!-- AGENDA VACÍA -->
 
                 <section class="agenda-vacia">
 
-                    <div class="agenda-vacia-icono">
+
+                    <div class="agenda-vacia-icon">
 
                         <i class="fa-regular fa-calendar-xmark"></i>
 
@@ -473,20 +336,283 @@ if (file_exists($archivo)) {
 
 
                     <p>
-                        Comienza agregando tu primer evento a AgendaWeb.
+                        Comienza agregando tu primer evento a la agenda.
                     </p>
 
 
                     <a
-                        href="index.php"
-                        class="btn-nuevo"
+                        href="index.html"
+                        class="btn-guardar"
                     >
 
                         <i class="fa-solid fa-plus"></i>
 
-                        Crear primer evento
+                        Crear evento
 
                     </a>
+
+
+                </section>
+
+
+
+            <?php else: ?>
+
+
+                <!-- GRID DE EVENTOS -->
+
+                <section class="eventos-grid">
+
+
+                    <?php foreach ($eventos as $evento): ?>
+
+
+                        <article class="evento-card">
+
+
+                            <!-- ICONO -->
+
+                            <div class="evento-icono">
+
+                                <i class="fa-solid fa-calendar-day"></i>
+
+                            </div>
+
+
+
+                            <!-- INFORMACIÓN -->
+
+                            <div class="evento-contenido">
+
+
+                                <!-- TÍTULO -->
+
+                                <h3>
+
+                                    <?= htmlspecialchars(
+                                        $evento["titulo"],
+                                        ENT_QUOTES,
+                                        "UTF-8"
+                                    ) ?>
+
+                                </h3>
+
+
+
+                                <!-- CLIENTE -->
+
+                                <?php if (!empty($evento["cliente"])): ?>
+
+
+                                    <div class="evento-dato">
+
+                                        <i class="fa-solid fa-user"></i>
+
+                                        <span>
+
+                                            <?= htmlspecialchars(
+                                                $evento["cliente"],
+                                                ENT_QUOTES,
+                                                "UTF-8"
+                                            ) ?>
+
+                                        </span>
+
+                                    </div>
+
+
+                                <?php endif; ?>
+
+
+
+                                <!-- FECHA -->
+
+                                <div class="evento-fecha">
+
+                                    <i class="fa-regular fa-calendar"></i>
+
+                                    <span>
+
+                                        <?= htmlspecialchars(
+                                            $evento["fecha"],
+                                            ENT_QUOTES,
+                                            "UTF-8"
+                                        ) ?>
+
+                                    </span>
+
+                                </div>
+
+
+
+                                <!-- HORA -->
+
+                                <?php if (!empty($evento["hora"])): ?>
+
+
+                                    <div class="evento-dato">
+
+                                        <i class="fa-regular fa-clock"></i>
+
+                                        <span>
+
+                                            <?= htmlspecialchars(
+                                                substr($evento["hora"], 0, 5),
+                                                ENT_QUOTES,
+                                                "UTF-8"
+                                            ) ?>
+
+                                        </span>
+
+                                    </div>
+
+
+                                <?php endif; ?>
+
+
+
+                                <!-- CATEGORÍA -->
+
+                                <?php if (!empty($evento["categoria"])): ?>
+
+
+                                    <div class="evento-dato">
+
+                                        <i class="fa-solid fa-tag"></i>
+
+                                        <span>
+
+                                            <?= htmlspecialchars(
+                                                $evento["categoria"],
+                                                ENT_QUOTES,
+                                                "UTF-8"
+                                            ) ?>
+
+                                        </span>
+
+                                    </div>
+
+
+                                <?php endif; ?>
+
+
+
+                                <!-- UBICACIÓN -->
+
+                                <?php if (!empty($evento["ubicacion"])): ?>
+
+
+                                    <div class="evento-dato">
+
+                                        <i class="fa-solid fa-location-dot"></i>
+
+                                        <span>
+
+                                            <?= htmlspecialchars(
+                                                $evento["ubicacion"],
+                                                ENT_QUOTES,
+                                                "UTF-8"
+                                            ) ?>
+
+                                        </span>
+
+                                    </div>
+
+
+                                <?php endif; ?>
+
+
+
+                                <!-- DESCRIPCIÓN -->
+
+                                <?php if (!empty($evento["descripcion"])): ?>
+
+
+                                    <div class="evento-descripcion">
+
+                                        <i class="fa-solid fa-align-left"></i>
+
+                                        <p>
+
+                                            <?= nl2br(
+                                                htmlspecialchars(
+                                                    $evento["descripcion"],
+                                                    ENT_QUOTES,
+                                                    "UTF-8"
+                                                )
+                                            ) ?>
+
+                                        </p>
+
+                                    </div>
+
+
+                                <?php endif; ?>
+
+
+
+                                <!-- BOTONES -->
+
+                                <div class="evento-acciones">
+
+
+                                    <!-- EDITAR -->
+
+                                    <a
+                                        href="editar.php?id=<?= $evento["id"] ?>"
+                                        class="btn-editar"
+                                    >
+
+                                        <i class="fa-solid fa-pen"></i>
+
+                                        Editar
+
+                                    </a>
+
+
+
+                                    <!-- ELIMINAR -->
+
+                                    <form
+                                        action="borrar.php"
+                                        method="POST"
+                                        onsubmit="return confirm('¿Quieres eliminar este evento?');"
+                                    >
+
+
+                                        <input
+                                            type="hidden"
+                                            name="id"
+                                            value="<?= $evento["id"] ?>"
+                                        >
+
+
+                                        <button
+                                            type="submit"
+                                            class="btn-eliminar"
+                                        >
+
+                                            <i class="fa-solid fa-trash"></i>
+
+                                            Eliminar
+
+                                        </button>
+
+
+                                    </form>
+
+
+                                </div>
+
+
+                            </div>
+
+
+                        </article>
+
+
+                    <?php endforeach; ?>
+
 
                 </section>
 
@@ -496,6 +622,9 @@ if (file_exists($archivo)) {
 
         </div>
 
+
+
+        <!-- FOOTER -->
 
         <footer>
 
@@ -507,6 +636,7 @@ if (file_exists($archivo)) {
 
 
     </main>
+
 
 </body>
 

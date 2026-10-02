@@ -1,42 +1,3 @@
-<?php
-
-$archivo = "datos.json";
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-    $eventos = [];
-
-    if (file_exists($archivo)) {
-        $contenido = file_get_contents($archivo);
-        $eventos = json_decode($contenido, true) ?? [];
-    }
-
-    $nuevoEvento = [
-        "id" => uniqid(),
-        "titulo" => $_POST["titulo"] ?? "",
-        "cliente" => $_POST["cliente"] ?? "",
-        "fecha" => $_POST["fecha"] ?? "",
-        "hora" => $_POST["hora"] ?? "",
-        "categoria" => $_POST["categoria"] ?? "",
-        "ubicacion" => $_POST["ubicacion"] ?? "",
-        "descripcion" => $_POST["descripcion"] ?? ""
-    ];
-
-    $eventos[] = $nuevoEvento;
-
-    file_put_contents(
-        $archivo,
-        json_encode(
-            $eventos,
-            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-        )
-    );
-
-    header("Location: index.php?guardado=1");
-    exit;
-}
-
-?>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -44,72 +5,118 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
 
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>AgendaWeb - Inicio</title>
 
+
+    <!-- Google Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin
+    >
 
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap"
         rel="stylesheet"
     >
 
+
+    <!-- Font Awesome -->
+
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
+
+    <!-- CSS -->
+
     <link rel="stylesheet" href="css/styles.css">
 
 </head>
 
+
 <body>
 
+
+    <!-- DECORACIÓN -->
+
     <div class="glow glow-1"></div>
+
     <div class="glow glow-2"></div>
+
+
 
     <!-- ================= SIDEBAR ================= -->
 
     <aside class="sidebar">
 
+
+        <!-- LOGO -->
+
         <div class="brand">
 
             <div class="brand-icon">
+
                 <i class="fa-solid fa-calendar-days"></i>
+
             </div>
 
+
             <div>
-                <h2>Agenda<span>Web</span></h2>
-                <p>Organiza tus momentos</p>
+
+                <h2>
+                    Agenda<span>Web</span>
+                </h2>
+
+                <p>
+                    Organiza tus momentos
+                </p>
+
             </div>
 
         </div>
 
+
+
+        <!-- MENÚ -->
+
         <nav class="menu">
 
-            <a href="index.php" class="menu-item active">
+
+            <a href="index.html" class="menu-item active">
+
                 <i class="fa-solid fa-house"></i>
-                <span>Inicio</span>
+
+                <span>
+                    Inicio
+                </span>
+
             </a>
+
 
             <a href="agenda.php" class="menu-item">
+
                 <i class="fa-solid fa-calendar-days"></i>
-                <span>Mi Agenda</span>
+
+                <span>
+                    Mi Agenda
+                </span>
+
             </a>
 
-            <a href="#" class="menu-item">
-                <i class="fa-regular fa-note-sticky"></i>
-                <span>Notas</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <i class="fa-solid fa-gear"></i>
-                <span>Configuración</span>
-            </a>
 
         </nav>
+
+
+
+        <!-- FRASE -->
 
         <div class="sidebar-frase">
 
@@ -123,77 +130,61 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         </div>
 
+
+
+        <!-- PIE DEL SIDEBAR -->
+
         <div class="sidebar-footer">
 
             <i class="fa-solid fa-heart"></i>
 
-            <span>AgendaWeb</span>
+            <span>
+                AgendaWeb
+            </span>
 
         </div>
 
+
     </aside>
+
 
 
     <!-- ================= CONTENIDO PRINCIPAL ================= -->
 
     <main class="main">
 
+
         <!-- TOPBAR -->
 
         <header class="topbar">
 
-            <div class="buscador">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-                <input
-                    type="text"
-                    placeholder="Buscar eventos, notas..."
-                >
-
-            </div>
-
             <div class="usuario">
 
-                <button class="notificacion">
-
-                    <i class="fa-regular fa-bell"></i>
-
-                    <span></span>
-
-                </button>
-
                 <div class="avatar">
+
                     <i class="fa-solid fa-user"></i>
+
                 </div>
 
-                <span>Mi Agenda</span>
+                <span>
+                    Mi Agenda
+                </span>
 
             </div>
 
         </header>
 
 
+
         <!-- ================= INICIO ================= -->
 
         <div class="inicio-contenido">
-
-            <?php if (isset($_GET["guardado"])): ?>
-
-                <div class="mensaje-exito">
-
-                    <i class="fa-solid fa-circle-check"></i>
-
-                    ¡El evento se guardó correctamente!
-
-                </div>
-
-            <?php endif; ?>
 
 
             <!-- PRESENTACIÓN -->
 
             <section class="inicio-presentacion">
+
 
                 <div>
 
@@ -205,9 +196,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     </p>
 
+
                     <h2>
                         Organiza tus momentos
                     </h2>
+
 
                     <p class="texto-inicio">
 
@@ -219,20 +212,27 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </div>
 
 
+
                 <div class="decoracion-calendario">
 
                     <i class="fa-solid fa-calendar-check"></i>
 
                 </div>
 
+
             </section>
 
 
-            <!-- FORMULARIO -->
+
+            <!-- ================= FORMULARIO ================= -->
 
             <section class="formulario-card">
 
+
+                <!-- TÍTULO DEL FORMULARIO -->
+
                 <div class="formulario-titulo">
+
 
                     <div>
 
@@ -246,15 +246,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                     </div>
 
+
                     <i class="fa-solid fa-calendar-plus"></i>
+
 
                 </div>
 
 
+
+                <!-- FORMULARIO -->
+
                 <form
                     class="formulario-agenda"
                     method="POST"
-                    action="index.php"
+                    action="registrar.php"
                 >
 
 
@@ -263,19 +268,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="campo">
 
                         <label for="titulo">
+
                             <i class="fa-solid fa-heading"></i>
+
                             Título del evento
+
                         </label>
+
 
                         <input
                             type="text"
                             id="titulo"
                             name="titulo"
-                            placeholder="Ej. Reunión con cliente"
+                            placeholder="Ej. Entrega de pastel"
+                            maxlength="150"
                             required
                         >
 
                     </div>
+
 
 
                     <!-- CLIENTE -->
@@ -283,18 +294,25 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="campo">
 
                         <label for="cliente">
+
                             <i class="fa-solid fa-user"></i>
-                            Cliente
+
+                            Nombre del cliente
+
                         </label>
+
 
                         <input
                             type="text"
                             id="cliente"
                             name="cliente"
-                            placeholder="Nombre del cliente"
+                            placeholder="Ej. María González"
+                            maxlength="150"
+                            required
                         >
 
                     </div>
+
 
 
                     <!-- FECHA -->
@@ -302,9 +320,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="campo">
 
                         <label for="fecha">
+
                             <i class="fa-regular fa-calendar"></i>
+
                             Fecha
+
                         </label>
+
 
                         <input
                             type="date"
@@ -316,14 +338,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
 
 
+
                     <!-- HORA -->
 
                     <div class="campo">
 
                         <label for="hora">
+
                             <i class="fa-regular fa-clock"></i>
+
                             Hora
+
                         </label>
+
 
                         <input
                             type="time"
@@ -335,42 +362,44 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
 
 
+
                     <!-- CATEGORÍA -->
 
                     <div class="campo">
 
                         <label for="categoria">
+
                             <i class="fa-solid fa-tag"></i>
+
                             Categoría
+
                         </label>
+
 
                         <select
                             id="categoria"
                             name="categoria"
+                            required
                         >
 
                             <option value="">
                                 Selecciona una categoría
                             </option>
 
-                            <option value="Reunión">
-                                Reunión
-                            </option>
-
-                            <option value="Cita">
-                                Cita
+                            <option value="Evento">
+                                Evento
                             </option>
 
                             <option value="Trabajo">
                                 Trabajo
                             </option>
 
-                            <option value="Personal">
-                                Personal
+                            <option value="Cita">
+                                Cita
                             </option>
 
-                            <option value="Evento">
-                                Evento
+                            <option value="Personal">
+                                Personal
                             </option>
 
                         </select>
@@ -378,23 +407,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
 
 
+
                     <!-- UBICACIÓN -->
 
                     <div class="campo">
 
                         <label for="ubicacion">
+
                             <i class="fa-solid fa-location-dot"></i>
+
                             Ubicación
+
                         </label>
+
 
                         <input
                             type="text"
                             id="ubicacion"
                             name="ubicacion"
-                            placeholder="Ej. Oficina, salón o domicilio"
+                            placeholder="Ej. Guadalajara, Jalisco"
+                            maxlength="200"
                         >
 
                     </div>
+
 
 
                     <!-- DESCRIPCIÓN -->
@@ -402,22 +438,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <div class="campo campo-completo">
 
                         <label for="descripcion">
+
                             <i class="fa-solid fa-align-left"></i>
+
                             Descripción
+
                         </label>
+
 
                         <textarea
                             id="descripcion"
                             name="descripcion"
                             placeholder="Escribe los detalles del evento..."
+                            rows="6"
                         ></textarea>
 
                     </div>
 
 
+
                     <!-- BOTONES -->
 
                     <div class="formulario-botones">
+
+
+                        <!-- LIMPIAR -->
 
                         <button
                             type="reset"
@@ -431,6 +476,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         </button>
 
 
+
+                        <!-- GUARDAR -->
+
                         <button
                             type="submit"
                             class="btn-guardar"
@@ -442,14 +490,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         </button>
 
+
                     </div>
+
 
                 </form>
 
+
             </section>
+
 
         </div>
 
+
+
+        <!-- FOOTER -->
 
         <footer>
 
@@ -459,8 +514,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         </footer>
 
+
     </main>
+
 
 </body>
 
 </html>
+

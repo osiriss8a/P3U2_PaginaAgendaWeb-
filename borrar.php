@@ -1,38 +1,41 @@
 <?php
 
-$archivo = "datos.json";
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-    $id = $_POST["id"] ?? "";
-
-    if (file_exists($archivo)) {
-
-        $contenido = file_get_contents($archivo);
-
-        $eventos = json_decode($contenido, true) ?? [];
-
-        $eventos = array_filter(
-            $eventos,
-            function ($evento) use ($id) {
-
-                return (string)$evento["id"] !== (string)$id;
-
-            }
-        );
+require_once "conexion.php";
 
 
-        file_put_contents(
-            $archivo,
-            json_encode(
-                array_values($eventos),
-                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
-            )
-        );
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 
-    }
+    header("Location: agenda.php");
+
+    exit;
 
 }
+
+
+$id = isset($_POST["id"])
+    ? (int) $_POST["id"]
+    : 0;
+
+
+if ($id <= 0) {
+
+    header("Location: agenda.php");
+
+    exit;
+
+}
+
+
+$sql = "DELETE FROM eventos WHERE id = :id";
+
+
+$stmt = $pdo->prepare($sql);
+
+
+$stmt->execute([
+    ":id" => $id
+]);
+
 
 header("Location: agenda.php");
 
